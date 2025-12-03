@@ -1,0 +1,85 @@
+# Калькулятор вартості замовлення в інтернет-магазині
+
+# Проблема 4: Використання констант замість "магічних чисел"
+VAT_RATE = 0.20
+VAT_MULTIPLIER = 1 + VAT_RATE
+
+# Проблема 1, 5: Метод розраховує базову суму замовлення
+# (Вирішення проблеми DRY: винесено загальну логіку)
+def calculate_base_total(prices: list[float]) -> float:
+    """
+    Розраховує загальну суму замовлення без застосування ПДВ чи знижок.
+    
+    Args:
+        prices (list[float]): Список цін товарів.
+        
+    Returns:
+        float: Базова сума замовлення.
+    """
+    # Проблема 1, 6: Покращений неймінг змінних (PEP8)
+    base_total = sum(prices)
+    return base_total
+
+# Проблема 1, 5: Метод розраховує суму з/без ПДВ
+# (Вирішення проблеми KISS/Відповідальність: функція відповідає лише за ПДВ)
+def apply_vat(base_total: float, include_vat: bool) -> float:
+    """
+    Застосовує податок (ПДВ) до базової суми замовлення.
+    
+    Args:
+        base_total (float): Сума замовлення до застосування податку.
+        include_vat (bool): Чи потрібно включати ПДВ (True) чи ні (False).
+        
+    Returns:
+        float: Сума з урахуванням або без урахування ПДВ.
+    """
+    # Проблема 6: Покращена умовна логіка (if include_vat: замість if include_vat == True:)
+    if include_vat:
+        return base_total * VAT_MULTIPLIER
+    return base_total
+
+# Проблема 1, 5: Метод розраховує суму зі знижкою
+# (Вирішення проблеми KISS/Відповідальність: функція відповідає лише за знижку)
+def apply_discount(total_amount: float, discount_ratio: float) -> float:
+    """
+    Застосовує знижку до загальної суми.
+    
+    Args:
+        total_amount (float): Сума до застосування знижки.
+        discount_ratio (float): Розмір знижки як десятковий дріб (наприклад, 0.1).
+        
+    Returns:
+        float: Фінальна сума після знижки.
+    """
+    return total_amount * (1 - discount_ratio)
+
+# --------- Головні функції API ---------
+
+# Проблема 2, 3: Основна функція для розрахунку без знижки
+def calculate_total(prices: list[float], include_vat: bool) -> float:
+    """Розраховує фінальну суму замовлення (з податком або без)"""
+    base = calculate_base_total(prices)
+    final_total = apply_vat(base, include_vat)
+    return final_total
+
+# Проблема 2, 3: Основна функція для розрахунку зі знижкою
+def calculate_total_with_discount(prices: list[float], include_vat: bool, discount_ratio: float) -> float:
+    """Розраховує суму замовлення зі знижкою (з податком або без)"""
+    base = calculate_total(prices, include_vat) # Використання DRY-функції
+    final_total = apply_discount(base, discount_ratio)
+    return final_total
+
+# Приклад використання:
+prices = [100, 200, 50]
+
+# Сума з ПДВ → 420.0
+total_with_vat = calculate_total(prices, True)
+print(f"Сума з ПДВ: {total_with_vat}")
+
+# Сума без ПДВ → 350.0
+total_without_vat = calculate_total(prices, False)
+print(f"Сума без ПДВ: {total_without_vat}")
+
+# Сума з ПДВ мінус 10% → 378.0
+total_discounted = calculate_total_with_discount(prices, True, 0.1)
+print(f"Сума зі знижкою: {total_discounted}")
